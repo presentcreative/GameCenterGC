@@ -47,20 +47,27 @@ static GameCenterPlugin* instance = nil;
 		NSString *method = [jsonObject valueForKey:@"method"];
 		}        
 		if ([method isEqualToString:@"checkAvailable"]) {
+			[self checkGCavailability];
 		}        
 		if ([method isEqualToString:@"reportScore"]) {
+			NSLOG(@"{gameCenterPlugin} reporting score:%@ - %@",[jsonObject objectForKey:@"field"],[jsonObject objectForKey:@"value"]);
+			[self reportScore:[jsonObject objectForKey:@"field"] value:[jsonObject objectForKey:@"value"]];
 		}        
 		if ([method isEqualToString:@"reportAchievement"]) {
+			NSLOG(@"{gameCenterPlugin} reporting achievement:%@ - %@",[jsonObject objectForKey:@"field"],[jsonObject objectForKey:@"value"]);
+			[self reportAchievement:[jsonObject objectForKey:@"field"] value:[jsonObject objectForKey:@"value"]];
 		}        
 		if ([method isEqualToString:@"getHighScore"]) {
+			NSLOG(@"{gameCenterPlugin} getting score:%@",[jsonObject objectForKey:@"field"]);
+			[self getHighScore:[jsonObject objectForKey:@"field"]];
 		}        
 		if ([method isEqualToString:@"getAchievement"]) {
-			NSLOG(@"{gameCenterPlugin} Clearing Badge");
-			[[UIApplication sharedApplication] setApplicationIconBadgeNumber:0];
+			NSLOG(@"{gameCenterPlugin} checking achievement:%@",[jsonObject objectForKey:@"field"]);
+			[self getAchievementProgress:[jsonObject objectForKey:@"field"]];
 		}
-		if ([method isEqualToString:@"otherFunc"]) {
-            // 			[[PluginManager get] dispatchJSEvent:[NSDictionary dictionaryWithObjectsAndKeys:
-            // 			@"geoloc",@"name", kCFBooleanTrue, @"failed", nil]];
+		if ([method isEqualToString:@"resetAchievements"]) {
+			NSLOG(@"{gameCenterPlugin} Clearing Achievements");
+			[self resetAchievement];
 		}
 	}
 	@catch (NSException *exception) {
@@ -93,7 +100,7 @@ static GameCenterPlugin* instance = nil;
 	[[PluginManager get] dispatchJSEvent:[NSDictionary dictionaryWithObjectsAndKeys:
 		  @"gameCenterPlugin",@"name",
 		  @"getScore", @"method",
-		  scoreDict,@"isAvailable", nil]];
+		  scoreDict,@"scores", nil]];
 }
 
 - (void) getAchievementProgress:(NSString*)field {
@@ -106,28 +113,32 @@ static GameCenterPlugin* instance = nil;
 	[[PluginManager get] dispatchJSEvent:[NSDictionary dictionaryWithObjectsAndKeys:
 		  @"gameCenterPlugin",@"name",
 		  @"getAchievement", @"method",
-		  achDict,@"isAvailable", nil]];
+		  achDict,@"achievements", nil]];
+}
 
+- (void) resetAchievement {
+	[[GameCenterManager sharedManager] resetAchievements];
 }
 
 - (void) scoreReported:(NSNotification*)notification  {
 	[[PluginManager get] dispatchJSEvent:[NSDictionary dictionaryWithObjectsAndKeys:
 		  @"gameCenterPlugin",@"name",
 		  @"scoreReported", @"method",
-		  [notification userInfo],@"isAvailable", nil]];
+		  [notification userInfo],@"userInfo", nil]];
 }
 
 - (void) achievementsReported:(NSNotification*)notification  {
 	[[PluginManager get] dispatchJSEvent:[NSDictionary dictionaryWithObjectsAndKeys:
 		  @"gameCenterPlugin",@"name",
 		  @"achievementReported", @"method",
-		  [notification userInfo],@"isAvailable", nil]];
+		  [notification userInfo],@"userInfo", nil]];
 }
 
 - (void) achievementsReset:(NSNotification*)notification  {
 	[[PluginManager get] dispatchJSEvent:[NSDictionary dictionaryWithObjectsAndKeys:
 		  @"gameCenterPlugin",@"name",
 		  @"achievementReset", @"method",
-		  [notification userInfo],@"isAvailable", nil]];
+		  [notification userInfo],@"userInfo", nil]];
 }
+
 @end
