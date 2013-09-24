@@ -1,5 +1,6 @@
+//hi
 #import "GameCenterPlugin.h"
-#import "GameCenterManager.h`"
+#import "GameCenterManager.h"
 
 
 static GameCenterPlugin* instance = nil;
@@ -45,17 +46,17 @@ static GameCenterPlugin* instance = nil;
 		NSLOG(@"{gameCenterPlugin} Got request");
         
 		NSString *method = [jsonObject valueForKey:@"method"];
-		}        
+
 		if ([method isEqualToString:@"checkAvailable"]) {
 			[self checkGCavailability];
 		}        
 		if ([method isEqualToString:@"reportScore"]) {
 			NSLOG(@"{gameCenterPlugin} reporting score:%@ - %@",[jsonObject objectForKey:@"field"],[jsonObject objectForKey:@"value"]);
-			[self reportScore:[jsonObject objectForKey:@"field"] value:[jsonObject objectForKey:@"value"]];
+			[self reportScore:[jsonObject objectForKey:@"field"] value:[[jsonObject objectForKey:@"value"] intValue]];
 		}        
 		if ([method isEqualToString:@"reportAchievement"]) {
 			NSLOG(@"{gameCenterPlugin} reporting achievement:%@ - %@",[jsonObject objectForKey:@"field"],[jsonObject objectForKey:@"value"]);
-			[self reportAchievement:[jsonObject objectForKey:@"field"] value:[jsonObject objectForKey:@"value"]];
+			[self reportAchievement:[jsonObject objectForKey:@"field"] value:[[jsonObject objectForKey:@"value"] intValue]];
 		}        
 		if ([method isEqualToString:@"getHighScore"]) {
 			NSLOG(@"{gameCenterPlugin} getting score:%@",[jsonObject objectForKey:@"field"]);
@@ -82,11 +83,11 @@ static GameCenterPlugin* instance = nil;
 		  [[GameCenterManager sharedManager] isGameCenterAvailable],@"isAvailable", nil]];
 }
 
-- (void) reportScore:(NSString*)field value:(int):value {
+- (void) reportScore:(NSString*)field value:(int)value {
 	 [[GameCenterManager sharedManager] saveAndReportScore:value leaderboard:field];
 }
 
-- (void) reportAchievement:(NSString*)field value:(int):value {
+- (void) reportAchievement:(NSString*)field value:(int)value {
 	[[GameCenterManager sharedManager] saveAndReportAchievement:field percentComplete:value];
 }
 
@@ -95,7 +96,7 @@ static GameCenterPlugin* instance = nil;
     NSArray *leaderboardIDs = [NSArray arrayWithObjects:field, nil];
 
     //Returns a dictionary with leaderboard ID's as keys and high scores as values
-	NSDictionary* scoreDict = [[GameCenterManager defaultManager] highScoreForLeaderboards:leaderboardIDs];
+	NSDictionary* scoreDict = [[GameCenterManager sharedManager] highScoreForLeaderboards:leaderboardIDs];
 
 	[[PluginManager get] dispatchJSEvent:[NSDictionary dictionaryWithObjectsAndKeys:
 		  @"gameCenterPlugin",@"name",
@@ -108,7 +109,7 @@ static GameCenterPlugin* instance = nil;
     NSArray *achievementIDs = [NSArray arrayWithObjects:field, nil];
 
     //Returns a dictionary with achievement ID's as keys and progress as values
-	NSDictionary* achDict = [[GameCenterManager defaultManager] progressForAchievements:achievementIDs];
+	NSDictionary* achDict = [[GameCenterManager sharedManager] progressForAchievements:achievementIDs];
     
 	[[PluginManager get] dispatchJSEvent:[NSDictionary dictionaryWithObjectsAndKeys:
 		  @"gameCenterPlugin",@"name",
@@ -140,5 +141,4 @@ static GameCenterPlugin* instance = nil;
 		  @"achievementReset", @"method",
 		  [notification userInfo],@"userInfo", nil]];
 }
-
 @end
