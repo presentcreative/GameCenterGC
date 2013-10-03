@@ -6,8 +6,8 @@
 		"GameCenterManager.m",
 		"NSDataAES256.h",
 		"NSDataAES256.m",
-		"Reachability.h",
-		"Reachability.m"
+		"Base64.h",
+		"Base64.m"
 	],
 	"frameworks": [
 		"GameKit",

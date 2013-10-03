@@ -449,9 +449,11 @@ static GameCenterManager *sharedManager = nil;
         [GKAchievement resetAchievementsWithCompletionHandler:^(NSError *error) {
             NSDictionary *dict = nil;
             if(error == nil) {
+                NSLog(@"{Game Center Manager} Achievements cleared");
                 dict = [NSDictionary dictionary];
             }
             else {
+                NSLog(@"{Game Center Manager} Achievements clear failed, %@",error.localizedDescription);
                 dict = [NSDictionary dictionaryWithObject:error.localizedDescription forKey:@"error"];
             }
             [[NSNotificationCenter defaultCenter] postNotificationName:kGameCenterManagerResetAchievementNotification
@@ -477,6 +479,87 @@ static GameCenterManager *sharedManager = nil;
         return YES;
     }
     return NO;
+}
+
+#pragma mark - challenge functions
+
+-(void) getFriendScoresForScoreBoard:(NSString*)scoreboard {
+    GKLeaderboard *leaderboard = [[GKLeaderboard alloc] init];
+    leaderboard.category = scoreboard;
+    leaderboard.playerScope = GKLeaderboardPlayerScopeFriendsOnly;
+    leaderboard.range = NSMakeRange(1, 100);
+    [leaderboard loadScoresWithCompletionHandler: ^(NSArray *scores, NSError *error) {
+         if (error == nil) {
+//             NSMutableArray *friendsScores = [NSMutableArray array];
+//             for (GKScore *score in scores) {
+//                 if (![score.playerID isEqualToString: [GKLocalPlayer localPlayer].playerID]) {
+//                     [friendsScores addObject:score];
+//                 }
+//             }
+             NSLog(@"{Game Center Manager} Got Friend Scores:%@",[scores description]);
+             NSDictionary* userInfo = [NSDictionary dictionaryWithObjectsAndKeys:scores, @"scores",scoreboard,@"scoreboard", nil];
+             [[NSNotificationCenter defaultCenter] postNotificationName:kGameCenterManagerReceivedFriendScoreNotification
+                                                                 object:[GameCenterManager sharedManager]
+                                                               userInfo:userInfo];
+         }
+     }];
+}
+
+-(void) sendScoreChallenge:(NSString*)challengeScoreboard ToPlayers:(NSArray*)players withScore:(int64_t)score message:(NSString*)message {
+    GKScore *gkScore = [[GKScore alloc] initWithCategory:challengeScoreboard];
+    gkScore.value = score;
+    
+    [gkScore issueChallengeToPlayers:players message:message];
+}
+
+-(void) getFriendList {
+    NSLog(@"{Game Center Manager} requesting friend list");
+    GKLocalPlayer *lp = [GKLocalPlayer localPlayer];
+//    if (lp.authenticated) {
+        [lp loadFriendsWithCompletionHandler:^(NSArray *friends, NSError *error) {
+             if (friends != nil) {
+                 NSLog(@"{Game Center Manager} Got Friends:%@",[friends description]);
+                 NSDictionary* userInfo = [NSDictionary dictionaryWithObjectsAndKeys:friends, @"friends", nil];
+
+                 [[NSNotificationCenter defaultCenter] postNotificationName:kGameCenterManagerReceivedFriendListNotification
+                                                                     object:[GameCenterManager sharedManager]
+                                                                   userInfo:userInfo];
+             }else if(error != nil){
+                 NSLog(@"{Game Center Manager} Error retrieving friends list: %@",error.description);
+             }else {
+                 NSLog(@"{Game Center Manager} No friends on list");
+             }
+         }];
+//    }
+}
+
+-(void) getPhotoForPlayer:(GKPlayer*)player small:(BOOL)small {
+    [player loadPhotoForSize:small?GKPhotoSizeSmall:GKPhotoSizeNormal withCompletionHandler:^(UIImage *photo, NSError *error) {
+        if (photo != nil) {
+            NSLog(@"{Game Center Manager} Got photo for friend:%@",[player displayName]);
+            NSDictionary* userInfo = [NSDictionary dictionaryWithObjectsAndKeys:photo, @"image", nil];
+            
+            [[NSNotificationCenter defaultCenter] postNotificationName:kGameCenterManagerReceivedFriendPhotoNotification
+                                                                object:[GameCenterManager sharedManager]
+                                                              userInfo:userInfo];
+
+            UIAlertView *successAlert = [[UIAlertView alloc] initWithTitle:player.displayName message:@"hot pic" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+            
+            UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(10, 10, photo.size.width, photo.size.height)];
+            
+            [imageView setImage:photo];
+            
+            [successAlert addSubview:imageView];
+            [imageView release];
+            
+            [successAlert show];
+            [successAlert release];
+        }else if(error != nil){
+            NSLog(@"{Game Center Manager} Error retrieving friends pic: %@",error.description);
+        }else {
+            NSLog(@"{Game Center Manager} No photo received");
+        }
+    }];
 }
 
 @end
