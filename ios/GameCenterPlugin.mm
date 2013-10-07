@@ -1,3 +1,4 @@
+//hi
 #import "GameCenterPlugin.h"
 #import "GameCenterManager.h"
 #import "Base64.h"
@@ -172,8 +173,6 @@ static GameCenterPlugin* instance = nil;
 		  @"achievementReset", @"method",
 		  [notification userInfo],@"userInfo", nil]];
 }
-
-
 
 -(void)onFriendScoresReceived:(NSNotification*)notification {
     NSLog(@"{gameCenterPlugin} Returning Friends Scores");
