@@ -537,23 +537,23 @@ static GameCenterManager *sharedManager = nil;
     [player loadPhotoForSize:small?GKPhotoSizeSmall:GKPhotoSizeNormal withCompletionHandler:^(UIImage *photo, NSError *error) {
         if (photo != nil) {
             NSLog(@"{Game Center Manager} Got photo for friend:%@",[player displayName]);
-            NSDictionary* userInfo = [NSDictionary dictionaryWithObjectsAndKeys:photo, @"image", nil];
+            NSDictionary* userInfo = [NSDictionary dictionaryWithObjectsAndKeys:photo, @"image",[player playerID],@"playerID", nil];
             
             [[NSNotificationCenter defaultCenter] postNotificationName:kGameCenterManagerReceivedFriendPhotoNotification
                                                                 object:[GameCenterManager sharedManager]
                                                               userInfo:userInfo];
 
-            UIAlertView *successAlert = [[UIAlertView alloc] initWithTitle:player.displayName message:@"hot pic" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-            
-            UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(10, 10, photo.size.width, photo.size.height)];
-            
-            [imageView setImage:photo];
-            
-            [successAlert addSubview:imageView];
-            [imageView release];
-            
-            [successAlert show];
-            [successAlert release];
+//            UIAlertView *successAlert = [[UIAlertView alloc] initWithTitle:player.displayName message:@"hot pic" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+//            
+//            UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(10, 200, photo.size.width, photo.size.height)];
+//            
+//            [imageView setImage:photo];
+//            
+//            [successAlert addSubview:imageView];
+//            [imageView release];
+//            
+//            [successAlert show];
+//            [successAlert release];
         }else if(error != nil){
             NSLog(@"{Game Center Manager} Error retrieving friends pic: %@",error.description);
         }else {

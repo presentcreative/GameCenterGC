@@ -244,6 +244,7 @@ static GameCenterPlugin* instance = nil;
 }
 
 -(void) onFriendImageReceived:(NSNotification*)notification {
+    NSLog(@"{gameCenterPlugin} Returning Friends Image");
     UIImage *image = [[notification userInfo] objectForKey:@"image"];
     NSData* data = UIImageJPEGRepresentation(image, 1.0f);
     [Base64 initialize];
@@ -251,7 +252,7 @@ static GameCenterPlugin* instance = nil;
     [[PluginManager get] dispatchJSEvent:[NSDictionary dictionaryWithObjectsAndKeys:
                                           @"gameCenterPlugin",@"name",
                                           @"gotFriendImage", @"method",
-                                          image,@"image",
+                                          [[notification userInfo] objectForKey:@"playerID"],@"playerID",
                                           imageString,@"imageString",nil]];
 }
 
